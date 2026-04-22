@@ -1,0 +1,1 @@
+# bridgefy-scanner-react-native
