@@ -1,0 +1,24 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- ============================================
+         FOREGROUND SERVICE PERMISSIONS
+         ============================================ -->
+
+  <!-- Core foreground service permission (Android 5.0+) -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+  <!-- Notification permission (Android 13+) -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <application>
+    <!-- ============================================
+             FOREGROUND SERVICE DECLARATION
+         ============================================ -->
+    <!-- Bridgefy Foreground Service -->
+    <service
+      android:name="com.beaconmesh.service.MeshNetworkService"
+      android:enabled="true"
+      android:exported="false"
+      android:foregroundServiceType="connectedDevice"/>
+  </application>
+</manifest>
