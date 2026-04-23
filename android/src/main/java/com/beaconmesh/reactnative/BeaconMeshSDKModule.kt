@@ -34,17 +34,18 @@ class BeaconMeshSDKModule(
       val msg = notification.getString("message") ?: "Running"
       val action = notification.getString("action") ?: "Stop"
 
-      meshManager.getSDK().init(
-        this,
-        NotificationConfig(
-          title,
-          msg,
-          action,
-        ),
-      ) {
-        it.getOrThrow()
-        promise.resolve(null)
-      }
+      meshManager
+        .getSDK()
+        .init(
+          UUID.fromString(apiKey),
+          this,
+          NotificationConfig(
+            title,
+            msg,
+            action,
+          ),
+        ).getOrThrow()
+      promise.resolve(null)
     } catch (e: Exception) {
       handleException("ERROR_INITIALIZED", e, "initialize", promise)
     }
@@ -56,17 +57,15 @@ class BeaconMeshSDKModule(
   ) {
     try {
       validateStarted().getOrThrow()
-      meshManager.getSDK().start(userId!!.let { UUID.fromString(it) }, null) {
-        val session = it.getOrThrow()
-        val map =
-          Arguments.createMap().apply {
-            putString("userId", session.userId)
-            putLong("startTime", session.startTime)
-            putBoolean("isActive", session.isActive)
-          }
-        emitOnBeaconMeshStarted(map.copy())
-        promise.resolve(map)
-      }
+      val session = meshManager.getSDK().start(userId?.let { UUID.fromString(it) }).getOrThrow()
+      val map =
+        Arguments.createMap().apply {
+          putString("userId", session.userId)
+          putLong("startTime", session.startTime)
+          putBoolean("isActive", session.isActive)
+        }
+      emitOnBeaconMeshStarted(map.copy())
+      promise.resolve(map)
     } catch (e: Exception) {
       handleException("ERROR_STARTED", e, "start", promise)
     }
@@ -216,8 +215,9 @@ class BeaconMeshSDKModule(
     val map =
       Arguments.createMap().apply {
         putString("uuid", deviceData.deviceId)
+        putString("deviceAddress", deviceData.macAddress)
         putInt("rssi", deviceData.rssi)
-        putDouble("distance", deviceData.distance)
+        putDouble("distance", deviceData.distanceInMeters)
         putLong("timestamp", deviceData.timestamp)
       }
     emitOnBeaconDiscovered(map)
@@ -247,14 +247,11 @@ class BeaconMeshSDKModule(
     emitOnNodeDisconnected(map)
   }
 
-  override fun onDirectMessageReceived(
-    message: BeaconMessage,
-    senderId: String,
-  ) {
+  override fun onDirectMessageReceived(message: BeaconMessage) {
     val map =
       Arguments.createMap().apply {
         putString("messageId", message.id)
-        putString("from", senderId)
+        putString("from", message.senderId)
         putString("to", meshManager.getSDK().currentSession!!.userId)
         putString("payload", String(message.payload!!))
         putDouble("timestamp", message.timestamp)

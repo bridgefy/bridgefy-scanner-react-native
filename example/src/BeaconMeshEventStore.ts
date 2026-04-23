@@ -11,7 +11,7 @@ import {
   type BeaconNode,
   type Beacon,
   type BeaconMeshSession,
-} from '@beaconmesh/react-native';
+} from '@bridgefy/scanner-react-native';
 
 export interface SDKEvent {
   id: string;

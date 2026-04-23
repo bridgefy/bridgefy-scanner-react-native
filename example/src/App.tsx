@@ -18,7 +18,7 @@ import LogsScreen from './screens/LogsScreen';
 import NearbyScreen from './screens/NearbyScreen';
 import P2PChatScreen from './screens/P2PChatScreen';
 
-import { BeaconMesh } from '@beaconmesh/react-native';
+import { BridgefyScanner } from '@bridgefy/scanner-react-native';
 import { setupBeaconMeshEventListeners } from './BeaconMeshEventStore';
 
 const Tab = createBottomTabNavigator();
@@ -59,7 +59,7 @@ function NearbyStackNavigator() {
 export default function App() {
   useEffect(() => {
     // Initialize global event listeners on app start
-    setupBeaconMeshEventListeners(BeaconMesh);
+    setupBeaconMeshEventListeners(BridgefyScanner);
   }, []);
 
   return (

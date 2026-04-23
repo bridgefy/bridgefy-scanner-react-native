@@ -14,7 +14,6 @@ public final class BeaconMeshManager: NSObject {
     public static let shared = BeaconMeshManager()
 
     private var client: BeaconMeshClient?
-    private let queue = DispatchQueue(label: "BeaconMeshManager.queue")
 
     private(set) var isInitialized = false
     private(set) var isStarted = false
@@ -38,7 +37,6 @@ public final class BeaconMeshManager: NSObject {
         delegate: BeaconMeshClientDelegate,
         completion: @escaping (NSError?) -> Void
     ) {
-        queue.async {
             do {
                 guard UUID(uuidString: apiKey) != nil else {
                     throw self.makeError("Invalid API Key format", code: 100)
@@ -55,7 +53,7 @@ public final class BeaconMeshManager: NSObject {
             } catch {
                 DispatchQueue.main.async { completion(error as NSError) }
             }
-        }
+
     }
 
     // MARK: - Start
@@ -64,7 +62,6 @@ public final class BeaconMeshManager: NSObject {
         userId: String?,
         completion: @escaping (NSError?) -> Void
     ) {
-        queue.async {
             guard let client = self.client else {
                 DispatchQueue.main.async {
                     completion(self.makeError("Client not initialized", code: 101))
@@ -77,32 +74,33 @@ public final class BeaconMeshManager: NSObject {
             Task {
                 do {
                     try await client.start(userId: uuid)
-                    self.isStarted = true
                     DispatchQueue.main.async { completion(nil) }
                 } catch {
                     DispatchQueue.main.async { completion(error as NSError) }
                 }
             }
-        }
+    }
+
+    func handleDidStart() {
+        self.isStarted = true
+    }
+
+    func handleDidStop() {
+        self.isStarted = false
     }
 
     public func stop() {
-        queue.async {
-            self.client?.stop()
-            self.isStarted = false
-        }
+      guard isStarted else { return }
+         self.client?.stop()
+         self.isStarted = false
     }
 
     public func resetSession() {
-        queue.async {
-            self.client?.resetSession()
-        }
+         self.client?.resetSession()
     }
 
     public func currentUUID() -> String? {
-        queue.sync {
-            client?.currentUUID?.uuidString
-        }
+        client?.currentUUID?.uuidString
     }
 
     // MARK: - Messaging

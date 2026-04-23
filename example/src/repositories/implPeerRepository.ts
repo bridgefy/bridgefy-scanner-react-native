@@ -1,7 +1,7 @@
 import type { Peer } from '../entities';
 import { PeerListService } from '../services';
 import type { IPeerRepository, PeerEventHandlers } from './PeerRepository';
-import { BeaconMesh } from '@beaconmesh/react-native';
+import { BridgefyScanner } from '@bridgefy/scanner-react-native';
 import type { EventSubscription } from 'react-native';
 
 export class PeerRepository implements IPeerRepository {
@@ -12,7 +12,7 @@ export class PeerRepository implements IPeerRepository {
 
   async getPeers(): Promise<Peer[]> {
     try {
-      const connectedPeers = await BeaconMesh.getConnectedNodes();
+      const connectedPeers = await BridgefyScanner.getConnectedNodes();
 
       if (!Array.isArray(connectedPeers)) {
         return [];
@@ -37,7 +37,7 @@ export class PeerRepository implements IPeerRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BeaconMesh.onNodeConnected((event) => {
+      BridgefyScanner.onNodeConnected((event) => {
         console.log('Peer connected:', event.id);
         const peer: Peer = {
           id: `${Date.now()}-${Math.random()}`,
@@ -54,7 +54,7 @@ export class PeerRepository implements IPeerRepository {
     );
 
     this.eventListeners.push(
-      BeaconMesh.onNodeDisconnected((event) => {
+      BridgefyScanner.onNodeDisconnected((event) => {
         console.log('Peer disconnected:', event.id);
         this.peerListService.updatePeerStatus(event.id, 'disconnected');
         this.eventHandlers.onPeerDisconnect?.(event.id);

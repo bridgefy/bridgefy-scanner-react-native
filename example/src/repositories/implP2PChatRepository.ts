@@ -1,6 +1,6 @@
 import type { IP2PChatRepository, P2PEventHandlers } from './P2PChatRepository';
 import type { P2PMessage } from '../entities';
-import { BeaconMesh } from '@beaconmesh/react-native';
+import { BridgefyScanner } from '@bridgefy/scanner-react-native';
 import type { EventSubscription } from 'react-native';
 
 export class P2PChatRepository implements IP2PChatRepository {
@@ -22,7 +22,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
   async sendP2PMessage(text: string, peerId: string): Promise<string> {
     try {
-      const messageId = await BeaconMesh.sendP2PMessage(peerId, text);
+      const messageId = await BridgefyScanner.sendP2PMessage(peerId, text);
       return messageId;
     } catch (error) {
       console.error('Failed to send P2P message:', error);
@@ -34,7 +34,7 @@ export class P2PChatRepository implements IP2PChatRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BeaconMesh.onP2PMessageReceived((event) => {
+      BridgefyScanner.onP2PMessageReceived((event) => {
         const message: P2PMessage = {
           id: event.messageId || `msg-${Date.now()}-${Math.random()}`,
           text: event.payload,
@@ -50,7 +50,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar desconexiones del peer
     this.eventListeners.push(
-      BeaconMesh.onNodeDisconnected((event) => {
+      BridgefyScanner.onNodeDisconnected((event) => {
         if (event.id === peerId) {
           console.log('Peer disconnected:', peerId);
           this.eventHandlers.onPeerDisconnected?.(peerId);
@@ -60,7 +60,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar reconexiones del peer
     this.eventListeners.push(
-      BeaconMesh.onNodeConnected((event) => {
+      BridgefyScanner.onNodeConnected((event) => {
         if (event.id === peerId) {
           console.log('Peer connected:', peerId);
           this.eventHandlers.onPeerConnected?.(peerId);
@@ -70,7 +70,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar fallos en el envío
     this.eventListeners.push(
-      BeaconMesh.onError((error) => {
+      BridgefyScanner.onError((error) => {
         console.error('Failed to send message:', error);
         const err: Error & { messageId?: string } = Object.assign(
           new Error(error?.message ?? 'Failed to send message'),

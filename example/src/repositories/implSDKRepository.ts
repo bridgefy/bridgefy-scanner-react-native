@@ -1,11 +1,11 @@
 import type { ISDKRepository, SDKEventHandlers } from './SDKRepository';
 import type { SDKControlResult, SDKStatusSnapshot } from '../entities';
 import {
-  BeaconMesh,
+  BridgefyScanner,
   type BeaconMeshError,
   type BeaconNode,
   type NotificationConfig,
-} from '@beaconmesh/react-native';
+} from '@bridgefy/scanner-react-native';
 import type { EventSubscription } from 'react-native';
 
 export class SDKRepository implements ISDKRepository {
@@ -17,7 +17,7 @@ export class SDKRepository implements ISDKRepository {
 
   async initialize(apiKey: string): Promise<SDKControlResult> {
     try {
-      const isAlreadyInitialized = await BeaconMesh.isInitialized();
+      const isAlreadyInitialized = await BridgefyScanner.isInitialized();
       if (isAlreadyInitialized) {
         return {
           success: true,
@@ -25,7 +25,7 @@ export class SDKRepository implements ISDKRepository {
         };
       }
 
-      await BeaconMesh.initialize(apiKey, {
+      await BridgefyScanner.initialize(apiKey, {
         title: 'Monitor has started',
         message: 'SDK is already started',
         startMessage: 'Start SDK',
@@ -46,16 +46,17 @@ export class SDKRepository implements ISDKRepository {
 
   async checkStatus(): Promise<SDKStatusSnapshot> {
     try {
-      const isInitialized = await BeaconMesh.isInitialized();
-      const isStarted = await BeaconMesh.isStarted();
+      const isInitialized = await BridgefyScanner.isInitialized();
+      const isStarted = await BridgefyScanner.isStarted();
       let userId = '';
       let connectedPeers: string[] = [];
 
       if (isStarted) {
-        let session = await BeaconMesh.getCurrentSessionId();
+        let session = await BridgefyScanner.getCurrentSessionId();
         userId = session.userId;
         connectedPeers =
-          (await BeaconMesh.getConnectedNodes()).map((peer) => peer.id) || [];
+          (await BridgefyScanner.getConnectedNodes()).map((peer) => peer.id) ||
+          [];
       }
 
       return {
@@ -73,7 +74,7 @@ export class SDKRepository implements ISDKRepository {
 
   async start(userId: string | undefined | null): Promise<SDKControlResult> {
     try {
-      const isAlreadyStarted = await BeaconMesh.isStarted();
+      const isAlreadyStarted = await BridgefyScanner.isStarted();
       if (isAlreadyStarted) {
         return {
           success: true,
@@ -81,7 +82,7 @@ export class SDKRepository implements ISDKRepository {
         };
       }
 
-      await BeaconMesh.start(userId);
+      await BridgefyScanner.start(userId);
       return {
         success: true,
         message: 'Beacon Mesh SDK started successfully',
@@ -97,7 +98,7 @@ export class SDKRepository implements ISDKRepository {
 
   async stop(): Promise<SDKControlResult> {
     try {
-      const isStarted = await BeaconMesh.isStarted();
+      const isStarted = await BridgefyScanner.isStarted();
       if (!isStarted) {
         return {
           success: true,
@@ -105,7 +106,7 @@ export class SDKRepository implements ISDKRepository {
         };
       }
 
-      await BeaconMesh.stop({
+      await BridgefyScanner.stop({
         title: 'Monitor',
         message: 'SDK is already stopped',
         startMessage: 'Start SDK',
@@ -126,7 +127,7 @@ export class SDKRepository implements ISDKRepository {
 
   async getConnectedPeers(): Promise<BeaconNode[]> {
     try {
-      return (await BeaconMesh.getConnectedNodes()) || [];
+      return (await BridgefyScanner.getConnectedNodes()) || [];
     } catch (error) {
       console.error('Failed to get connected peers:', error);
       throw error;
@@ -137,33 +138,33 @@ export class SDKRepository implements ISDKRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BeaconMesh.onBeaconMeshStarted((event) => {
+      BridgefyScanner.onBeaconMeshStarted((event) => {
         this.eventHandlers.onStart?.(event.userId);
       })
     );
 
     this.eventListeners.push(
-      BeaconMesh.onBeaconMeshStopped(() => {
+      BridgefyScanner.onBeaconMeshStopped(() => {
         this.eventHandlers.onStop?.();
       })
     );
 
     this.eventListeners.push(
-      BeaconMesh.onNodeConnected((event) => {
+      BridgefyScanner.onNodeConnected((event) => {
         this.eventHandlers.onPeerConnect?.(event.id);
         this.updatePeers();
       })
     );
 
     this.eventListeners.push(
-      BeaconMesh.onNodeDisconnected((event) => {
+      BridgefyScanner.onNodeDisconnected((event) => {
         this.eventHandlers.onPeerDisconnect?.(event.id);
         this.updatePeers();
       })
     );
 
     this.eventListeners.push(
-      BeaconMesh.onError((error: BeaconMeshError) => {
+      BridgefyScanner.onError((error: BeaconMeshError) => {
         const err = new Error(
           (error as any)?.message ?? 'Beacon Mesh failed to start'
         );

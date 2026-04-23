@@ -3,7 +3,6 @@ export * from './CheckSDKStatusUseCase';
 export * from './ClearEventsUseCase';
 export * from './GetCurrentUserIdUseCase';
 export * from './GetEventsUseCase';
-export * from './GetOperationUseCase';
 export * from './GetP2PUserIdUseCase';
 export * from './GetPeersUseCase';
 export * from './OpenSettingsUseCase';

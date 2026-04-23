@@ -17,7 +17,7 @@ export {
   type BeaconMeshSession,
 };
 
-export const BeaconMesh = {
+export const BridgefyScanner = {
   initialize(apiKey: string, notification: NotificationConfig) {
     return BeaconMeshSDK.initialize(apiKey, notification);
   },

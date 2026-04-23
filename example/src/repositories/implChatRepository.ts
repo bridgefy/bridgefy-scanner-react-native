@@ -1,6 +1,6 @@
 import type { ChatEventHandlers, IChatRepository } from './ChatRepository';
 import type { Message, TransmissionMode } from '../entities';
-import { BeaconMesh } from '@beaconmesh/react-native';
+import { BridgefyScanner } from '@bridgefy/scanner-react-native';
 import type { EventSubscription } from 'react-native';
 
 export class ChatRepository implements IChatRepository {
@@ -22,7 +22,7 @@ export class ChatRepository implements IChatRepository {
 
   async sendMessage(text: string): Promise<string> {
     try {
-      return await BeaconMesh.sendBroadcast(text);
+      return await BridgefyScanner.sendBroadcast(text);
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;
@@ -33,7 +33,7 @@ export class ChatRepository implements IChatRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BeaconMesh.onBroadcastMessageReceived((event) => {
+      BridgefyScanner.onBroadcastMessageReceived((event) => {
         console.log(JSON.stringify(event));
         const message: Message = {
           id: event.messageId || `msg-${Date.now()}-${Math.random()}`,
@@ -49,7 +49,7 @@ export class ChatRepository implements IChatRepository {
     );
 
     this.eventListeners.push(
-      BeaconMesh.onBeaconMeshStarted((event) => {
+      BridgefyScanner.onBeaconMeshStarted((event) => {
         this.eventHandlers.onUserIdChanged?.(event.userId);
       })
     );

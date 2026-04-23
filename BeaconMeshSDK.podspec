@@ -11,13 +11,13 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/beaconmesh/beaconmesh-react-native.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/bridgefy/bridgefy-scanner-react-native.git", :tag => "#{s.version}" }
 
   # Include ALL native sources
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   # TurboModule needs ObjC++
-  # s.requires_arc = true
+  s.requires_arc = true
 
   # Swift support
   s.swift_version = "5.0"

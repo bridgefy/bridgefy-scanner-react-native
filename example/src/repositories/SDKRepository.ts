@@ -1,5 +1,5 @@
 import type { SDKControlResult, SDKStatusSnapshot } from '../entities';
-import type { BeaconNode } from '@beaconmesh/react-native';
+import type { BeaconNode } from '@bridgefy/scanner-react-native';
 
 export interface ISDKRepository {
   checkStatus(): Promise<SDKStatusSnapshot>;

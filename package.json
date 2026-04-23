@@ -1,7 +1,7 @@
 {
-  "name": "@beaconmesh/react-native",
-  "version": "0.1.0",
-  "description": "Beacon-Mesh library",
+  "name": "@bridgefy/scanner-react-native",
+  "version": "1.0.0",
+  "description": "Beacon+Scanner library",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -32,7 +32,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace @beaconmesh/react-native-example",
+    "example": "yarn workspace @bridgefy/scanner-react-native-example",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "typecheck": "tsc",
