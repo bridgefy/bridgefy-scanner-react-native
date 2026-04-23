@@ -496,8 +496,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/bridgefy/BeaconMeshSDK-iOS";
 			requirement = {
-				branch = "fix/location-handle";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

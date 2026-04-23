@@ -60,7 +60,7 @@ This shape comes from the `BeaconMeshSession` type defined in the native module 
 
 ## Events
 
-`BridgefyScanner.Events` exposes these subscriptions:
+`BridgefyScanner` exposes these subscriptions:
 
 - `onBeaconMeshStarted`
 - `onBeaconMeshStopped`
@@ -75,11 +75,11 @@ This shape comes from the `BeaconMeshSession` type defined in the native module 
 ### Example subscription
 
 ```ts
-const startedSub = BridgefyScanner.Events.onBeaconMeshStarted(session => {
+const startedSub = BridgefyScanner.onBeaconMeshStarted(session => {
   console.log('Mesh started', session);
 });
 
-const errorSub = BridgefyScanner.Events.onError(error => {
+const errorSub = BridgefyScanner.onError(error => {
   console.log('Bridgefy error', error);
 });
 
@@ -259,7 +259,7 @@ export function useBridgefyScanner() {
         stopMessage: 'Stopped',
       });
 
-      startedSub = BridgefyScanner.Events.onBeaconMeshStarted(session => {
+      startedSub = BridgefyScanner.onBeaconMeshStarted(session => {
         console.log('Started', session);
       });
 
