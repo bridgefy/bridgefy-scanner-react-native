@@ -1,7 +1,7 @@
 {
   "name": "@bridgefy/scanner-react-native",
   "version": "1.0.0",
-  "description": "Beacon+Scanner library",
+  "description": "Bridgefy+Scanner library",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -47,14 +47,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beaconmesh/beaconmesh-react-native.git"
+    "url": "git+https://github.com/bridgefy/bridgefy-scanner-react-native.git"
   },
-  "author": "Beacon Mesh Developer team <contact@bridgefy.me> (https://bridgefy.me)",
+  "author": "Bridgefy Developer team <contact@bridgefy.me> (https://bridgefy.me)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/beaconmesh/beaconmesh-react-native/issues"
+    "url": "https://github.com/bridgefy/bridgefy-scanner-react-native/issues"
   },
-  "homepage": "https://github.com/beaconmesh/beaconmesh-react-native#readme",
+  "homepage": "https://github.com/bridgefy/bridgefy-scanner-react-native#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

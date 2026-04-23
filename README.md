@@ -131,7 +131,7 @@ await BridgefyScanner.stop();
 
 ## Permissions required
 
-For reliable device discovery and device connection, configure permissions for both **Location Services** and **Bluetooth** on Android and iOS. In practical BLE integrations, location-related permission is commonly needed for discovery, while Bluetooth permission is required to scan, discover, and connect to nearby devices.
+For reliable device discovery and connection, configure permissions for both **Location Services** and **Bluetooth** on Android and iOS. In practical BLE integrations, location-related permission is commonly needed for discovery, while Bluetooth permission is required to scan, discover, advertise, and connect to nearby devices.
 
 ---
 
@@ -143,15 +143,25 @@ For reliable device discovery and device connection, configure permissions for b
 
 ### AndroidManifest permissions
 
-Add the required permissions in `AndroidManifest.xml`:
+Use the following permissions in `AndroidManifest.xml`:
 
 ```xml
-<uses-permission android:name="android.permission.BLUETOOTH" />
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<!-- Android 12+ (API 31+) Bluetooth permissions -->
 <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
+<!-- All Android versions - Location (required for Bluetooth scanning) -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+<!-- Android < 12 (API < 31) - Legacy Bluetooth permissions -->
+<uses-permission
+  android:name="android.permission.BLUETOOTH"
+  android:maxSdkVersion="30" />
+<uses-permission
+  android:name="android.permission.BLUETOOTH_ADMIN"
+  android:maxSdkVersion="30" />
 ```
 
 ### Android runtime permissions
@@ -163,7 +173,7 @@ Request runtime permissions before starting scanning, especially on Android 12+ 
 Recommended user-facing permission explanations:
 
 - **Location Services:** required to discover and connect nearby devices.
-- **Bluetooth:** required to scan, discover, and connect nearby Bluetooth devices.
+- **Bluetooth:** required to scan, discover, advertise, and connect nearby Bluetooth devices.
 
 ### Android note
 
@@ -185,17 +195,15 @@ In Xcode, add the Swift package `BeaconMeshSDK` and link it to the application t
 4. Attach the package product to the same app target used by React Native.
 5. Build the project to resolve and link the package.
 
-### Info.plist permissions
+### Minimum iOS permission keys
 
-Add both Bluetooth and Location usage descriptions in `Info.plist`:
+If you only want the minimum permissions related to Bluetooth and discovery, the required description keys are:
 
 ```xml
 <key>NSBluetoothAlwaysUsageDescription</key>
-<string>This app uses Bluetooth to discover and connect nearby devices.</string>
-<key>NSBluetoothPeripheralUsageDescription</key>
-<string>This app uses Bluetooth to communicate with nearby devices.</string>
+<string>This app uses Bluetooth to discover and communicate with nearby devices.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>This app uses location access to discover and connect nearby devices.</string>
+<string>This app uses location to connect with nearby devices.</string>
 ```
 
 ### iOS permission descriptions
@@ -203,7 +211,7 @@ Add both Bluetooth and Location usage descriptions in `Info.plist`:
 Recommended permission message intent:
 
 - **Location Services:** required to discover and connect nearby devices.
-- **Bluetooth:** required to scan, discover, and communicate with nearby devices.
+- **Bluetooth:** required to discover, connect, and communicate with nearby devices.
 
 ### iOS note
 
@@ -297,14 +305,14 @@ No in practical app integration. `NotificationConfig` is intended for Android fo
 <details>
 <summary><strong>Are Location Services and Bluetooth permissions required on both platforms?</strong></summary>
 
-Yes for this integration guide. Configure both permission areas so the app can discover and connect nearby devices reliably on Android and iOS.
+Yes for this integration guide. Configure both permission areas so the app can discover, advertise, and connect nearby devices reliably on Android and iOS.
 
 </details>
 
 <details>
 <summary><strong>What do I put in the permission descriptions?</strong></summary>
 
-Use short, direct explanations such as: Location Services are required to discover and connect nearby devices, and Bluetooth is required to scan, discover, and communicate with nearby devices.
+Use short, direct explanations such as: Location Services are required to discover and connect nearby devices, and Bluetooth is required to scan, discover, advertise, and communicate with nearby devices.
 
 </details>
 
@@ -357,10 +365,3 @@ That depends on how the Bridgefy license was created. The key must correspond to
 
 </details>
 
----
-
-## Native bridge contract
-
-The TurboModule contract expects the native module name `BeaconMeshSDK` and defines these primary types: `NotificationConfig`, `BeaconMeshSession`, `BeaconNode`, `BeaconMessage`, `BeaconMeshError`, and `Beacon`.
-
-When implementing native Android or iOS modules, keep return shapes and event payloads aligned with these TypeScript definitions so the React Native layer receives the expected values.

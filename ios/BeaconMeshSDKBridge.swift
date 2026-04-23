@@ -1,4 +1,3 @@
-// BeaconMeshSDKBridge.swift
 import Foundation
 import React
 import BeaconMesh

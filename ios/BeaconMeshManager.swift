@@ -1,10 +1,3 @@
-//
-//  BeaconMeshManager.swift
-//  BeaconMeshSDK
-//
-//  Created by Gilberto Julián De La Orta Hernandez on 19/04/26.
-//
-
 import Foundation
 import BeaconMesh
 
