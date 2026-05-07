@@ -1,34 +1,20 @@
 package com.beaconmesh.reactnative
 
-import com.facebook.react.BaseReactPackage
+import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.module.model.ReactModuleInfo
-import com.facebook.react.module.model.ReactModuleInfoProvider
+import com.facebook.react.uimanager.ViewManager
 
-class BeaconMeshSDKPackage : BaseReactPackage() {
-  override fun getModule(
-    name: String,
+class BeaconMeshSDKPackage : ReactPackage {
+  override fun createNativeModules(
     reactContext: ReactApplicationContext,
-  ): NativeModule? =
-    if (name == BeaconMeshSDKModule.NAME) {
-      BeaconMeshSDKModule(reactContext)
-    } else {
-      null
-    }
+  ): List<NativeModule> {
+    return listOf(BeaconMeshSDKModule(reactContext))
+  }
 
-  override fun getReactModuleInfoProvider() =
-    ReactModuleInfoProvider {
-      mapOf(
-        BeaconMeshSDKModule.NAME to
-          ReactModuleInfo(
-            name = BeaconMeshSDKModule.NAME,
-            className = BeaconMeshSDKModule.NAME,
-            canOverrideExistingModule = false,
-            needsEagerInit = false,
-            isCxxModule = false,
-            isTurboModule = true,
-          ),
-      )
-    }
+  override fun createViewManagers(
+    reactContext: ReactApplicationContext,
+  ): List<ViewManager<*, *>> {
+    return emptyList()
+  }
 }

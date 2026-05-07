@@ -4,6 +4,7 @@
  * Updated App component with global event store initialization
  * Collects all SDK events regardless of which screen is active
  */
+// import 'react-native-url-polyfill/auto';
 
 import { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -59,7 +60,7 @@ function NearbyStackNavigator() {
 export default function App() {
   useEffect(() => {
     // Initialize global event listeners on app start
-    setupBeaconMeshEventListeners(BridgefyScanner);
+    setupBeaconMeshEventListeners(BridgefyScanner.Events);
   }, []);
 
   return (

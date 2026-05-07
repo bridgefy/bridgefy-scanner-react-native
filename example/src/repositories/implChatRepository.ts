@@ -33,7 +33,7 @@ export class ChatRepository implements IChatRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BridgefyScanner.onBroadcastMessageReceived((event) => {
+      BridgefyScanner.Events.onBroadcastMessageReceived((event) => {
         console.log(JSON.stringify(event));
         const message: Message = {
           id: event.messageId || `msg-${Date.now()}-${Math.random()}`,
@@ -49,7 +49,7 @@ export class ChatRepository implements IChatRepository {
     );
 
     this.eventListeners.push(
-      BridgefyScanner.onBeaconMeshStarted((event) => {
+      BridgefyScanner.Events.onBeaconMeshStarted((event) => {
         this.eventHandlers.onUserIdChanged?.(event.userId);
       })
     );

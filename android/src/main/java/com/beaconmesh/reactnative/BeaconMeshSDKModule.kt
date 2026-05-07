@@ -4,8 +4,11 @@ import com.beaconmesh.manager.MeshManager
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import me.bridgefy.beaconmesh.beaconmesh.commons.exception.BeaconMeshException
 import me.bridgefy.beaconmesh.sdkcommons.delegates.BeaconMeshDelegate
 import me.bridgefy.beaconmesh.sdkcommons.message.BeaconMessage
@@ -15,24 +18,32 @@ import java.util.UUID
 
 class BeaconMeshSDKModule(
   reactApplicationContext: ReactApplicationContext,
-) : NativeBeaconMeshSDKSpec(reactApplicationContext),
-  BeaconMeshDelegate {
+) : ReactContextBaseJavaModule(reactApplicationContext), BeaconMeshDelegate {
+
   companion object {
-    const val NAME = NativeBeaconMeshSDKSpec.NAME
+    const val NAME = "BeaconMeshSDK"
   }
 
-  private val meshManager: MeshManager by lazy { MeshManager.getInstance(reactApplicationContext.applicationContext) }
+  private val meshManager: MeshManager by lazy {
+    MeshManager.getInstance(reactApplicationContext.applicationContext)
+  }
 
-  override fun initialize(
+  private var listenerCount = 0
+
+  override fun getName(): String = NAME
+
+  @ReactMethod
+  fun initialize(
     apiKey: String,
     notification: ReadableMap,
     promise: Promise,
   ) {
     try {
-      validateNotInitialized()
+      ensureNotInitialized()
+
       val title = notification.getString("title") ?: "Mesh service"
-      val msg = notification.getString("message") ?: "Running"
-      val action = notification.getString("action") ?: "Stop"
+      val message = notification.getString("message") ?: "Running"
+      val stopMessage = notification.getString("stopMessage") ?: "Stop"
 
       meshManager
         .getSDK()
@@ -41,186 +52,241 @@ class BeaconMeshSDKModule(
           this,
           NotificationConfig(
             title,
-            msg,
-            action,
+            message,
+            stopMessage,
           ),
         ).getOrThrow()
-      promise.resolve(null)
+
+      promise.resolve(true)
     } catch (e: Exception) {
-      handleException("ERROR_INITIALIZED", e, "initialize", promise)
+      handleException("INITIALIZE_FAILED", e, "initialize", promise)
     }
   }
 
-  override fun start(
+  @ReactMethod
+  fun start(
     userId: String?,
     promise: Promise,
   ) {
     try {
-      validateStarted().getOrThrow()
-      val session = meshManager.getSDK().start(userId?.let { UUID.fromString(it) }).getOrThrow()
+      ensureInitialized()
+      ensureNotStarted()
+
+      val session = meshManager.getSDK().start(userId?.let(UUID::fromString)).getOrThrow()
+
       val map =
         Arguments.createMap().apply {
           putString("userId", session.userId)
-          putLong("startTime", session.startTime)
+          putDouble("startTime", session.startTime.toDouble())
           putBoolean("isActive", session.isActive)
         }
-      emitOnBeaconMeshStarted(map.copy())
+
+      sendEvent("onBeaconMeshStarted", map)
       promise.resolve(map)
     } catch (e: Exception) {
-      handleException("ERROR_STARTED", e, "start", promise)
+      handleException("START_FAILED", e, "start", promise)
     }
   }
 
-  override fun stop(
+  @ReactMethod
+  fun stop(
     notification: ReadableMap?,
     promise: Promise,
   ) {
     try {
-      validateNotStarted()
+      ensureInitialized()
+      ensureStarted()
+
       meshManager.getSDK().stop {
-        it.getOrThrow()
-        emitOnBeaconMeshStopped()
-        promise.resolve(null)
+        try {
+          it.getOrThrow()
+          sendEvent("onBeaconMeshStopped", null)
+          promise.resolve(null)
+        } catch (e: Exception) {
+          handleException("STOP_FAILED", e, "stop", promise)
+        }
       }
     } catch (e: Exception) {
       handleException("STOP_FAILED", e, "stop", promise)
     }
   }
 
-  override fun destroySession(promise: Promise) {
+  @ReactMethod
+  fun destroySession(promise: Promise) {
     try {
-      validateNotInitialized()
+      ensureInitialized()
       meshManager.getSDK().destroySession()
       promise.resolve(null)
     } catch (e: Exception) {
-      handleException("STOP_FAILED", e, "destroySession", promise)
+      handleException("DESTROY_SESSION_FAILED", e, "destroySession", promise)
     }
   }
 
-  override fun sendP2PMessage(
+  @ReactMethod
+  fun sendP2PMessage(
     receiverId: String,
     payload: String,
     promise: Promise,
   ) {
     try {
-      validateNotStarted()
+      ensureInitialized()
+      ensureStarted()
+
       meshManager.getSDK().sendDirectMessage(
         payload.toByteArray(Charsets.UTF_8),
         receiverId,
       ) {
-        promise.resolve(it.getOrThrow())
+        try {
+          promise.resolve(it.getOrThrow())
+        } catch (e: Exception) {
+          handleException("SEND_P2P_FAILED", e, "sendP2PMessage", promise)
+        }
       }
     } catch (e: Exception) {
-      handleException("NOT_STARTED", e, "sendP2P", promise)
+      handleException("SEND_P2P_FAILED", e, "sendP2PMessage", promise)
     }
   }
 
-  override fun sendBroadcast(
+  @ReactMethod
+  fun sendBroadcast(
     payload: String,
     promise: Promise,
   ) {
     try {
-      validateNotStarted()
+      ensureInitialized()
+      ensureStarted()
+
       meshManager.getSDK().sendPublicMessage(
         payload.toByteArray(Charsets.UTF_8),
       ) {
-        promise.resolve(it.getOrThrow())
+        try {
+          promise.resolve(it.getOrThrow())
+        } catch (e: Exception) {
+          handleException("SEND_BROADCAST_FAILED", e, "sendBroadcast", promise)
+        }
       }
     } catch (e: Exception) {
-      handleException("NOT_STARTED", e, "sendBroadcast", promise)
+      handleException("SEND_BROADCAST_FAILED", e, "sendBroadcast", promise)
     }
   }
 
-  override fun getConnectedNodes(promise: Promise) {
+  @ReactMethod
+  fun getConnectedNodes(promise: Promise) {
     try {
-      validateNotStarted()
-      val nodes = meshManager.getSDK().getConnectedNodes().getOrThrow() ?: emptyList()
+      ensureInitialized()
+      ensureStarted()
+
+      val nodes = meshManager.getSDK().getConnectedNodes().getOrThrow().orEmpty()
       val array =
         Arguments.createArray().apply {
           nodes.forEach { node ->
             pushMap(
               Arguments.createMap().apply {
                 putString("id", node.toString())
-                putLong("lastSeen", System.currentTimeMillis())
+                putDouble("lastSeen", System.currentTimeMillis().toDouble())
               },
             )
           }
         }
+
       promise.resolve(array)
     } catch (e: Exception) {
-      handleException("NOT_STARTED", e, "connectedNodes", promise)
+      handleException("GET_CONNECTED_NODES_FAILED", e, "getConnectedNodes", promise)
     }
   }
 
-  override fun getNode(
+  @ReactMethod
+  fun getNode(
     nodeId: String,
     promise: Promise,
   ) {
     try {
-      validateNotStarted()
-      val nodes =
-        MeshManager
-          .getInstance(reactApplicationContext.applicationContext)
+      ensureInitialized()
+      ensureStarted()
+
+      val node =
+        meshManager
           .getSDK()
           .getConnectedNodes()
-          .getOrThrow() ?: emptyList()
-      val lastNode = nodes.find { it.toString() == nodeId }
-      if (lastNode != null) {
-        promise.resolve(
-          Arguments.createMap().apply {
-            putString("id", lastNode.toString())
-            putLong("lastSeen", System.currentTimeMillis())
-          },
-        )
-      } else {
+          .getOrThrow()
+          .orEmpty()
+          .find { it.toString() == nodeId }
+
+      if (node == null) {
         promise.resolve(null)
+        return
       }
+
+      promise.resolve(
+        Arguments.createMap().apply {
+          putString("id", node.toString())
+          putDouble("lastSeen", System.currentTimeMillis().toDouble())
+        },
+      )
     } catch (e: Exception) {
-      handleException("NOT_STARTED", e, "getNode", promise)
+      handleException("GET_NODE_FAILED", e, "getNode", promise)
     }
   }
 
-  override fun isStarted(promise: Promise) {
+  @ReactMethod
+  fun isStarted(promise: Promise) {
     try {
       promise.resolve(meshManager.isStarted())
     } catch (e: Exception) {
-      handleException("NOT_INITIALIZED", e, "sendBroadcast", promise)
+      handleException("IS_STARTED_FAILED", e, "isStarted", promise)
     }
   }
 
-  override fun isInitialized(promise: Promise) {
-    promise.resolve(meshManager.getSDK().isInitialized)
+  @ReactMethod
+  fun isInitialized(promise: Promise) {
+    try {
+      promise.resolve(meshManager.isInitialized())
+    } catch (e: Exception) {
+      handleException("IS_INITIALIZED_FAILED", e, "isInitialized", promise)
+    }
   }
 
-  override fun getCurrentSessionId(promise: Promise) {
+  @ReactMethod
+  fun getCurrentSessionId(promise: Promise) {
     try {
-      validateNotStarted()
-      val session = meshManager.getSDK().currentSession!!
+      ensureInitialized()
+      ensureStarted()
+
+      val session = meshManager.getSDK().currentSession
+        ?: throw BeaconMeshException.SessionErrorException("Current session is null.")
+
       promise.resolve(
         Arguments.createMap().apply {
           putString("userId", session.userId)
-          putLong("startTime", session.startTime)
+          putDouble("startTime", session.startTime.toDouble())
           putBoolean("isActive", session.isActive)
         },
       )
     } catch (e: Exception) {
-      handleException("NOT_STARTED", e, "getCurrentSessionId", promise)
+      handleException("GET_CURRENT_SESSION_FAILED", e, "getCurrentSessionId", promise)
     }
   }
 
-  // ****************************************
-  // *** Bridgefy Scanner delegate events ***
-  // ****************************************
+  @ReactMethod
+  fun addListener(eventName: String) {
+    listenerCount += 1
+  }
+
+  @ReactMethod
+  fun removeListeners(count: Int) {
+    listenerCount = (listenerCount - count).coerceAtLeast(0)
+  }
+
   override fun onBeaconFound(deviceData: DiscoveredDevice) {
     val map =
       Arguments.createMap().apply {
         putString("uuid", deviceData.deviceId)
         putString("deviceAddress", deviceData.macAddress)
         putInt("rssi", deviceData.rssi)
-        putDouble("distance", deviceData.distanceInMeters)
-        putLong("timestamp", deviceData.timestamp)
+        putDouble("txPower", deviceData.distanceInMeters)
+        // putString("name", deviceData.deviceName ?: "")
       }
-    emitOnBeaconDiscovered(map)
+    sendEvent("onBeaconDiscovered", map)
   }
 
   override fun onBeaconLost(deviceId: String) {
@@ -228,68 +294,80 @@ class BeaconMeshSDKModule(
       Arguments.createMap().apply {
         putString("uuid", deviceId)
       }
-    emitOnBeaconLost(map)
+    sendEvent("onBeaconLost", map)
   }
 
   override fun onBridgefyNodeConnected(id: String) {
     val map =
       Arguments.createMap().apply {
         putString("id", id)
+        putDouble("lastSeen", System.currentTimeMillis().toDouble())
       }
-    emitOnNodeConnected(map)
+    sendEvent("onNodeConnected", map)
   }
 
   override fun onBridgefyNodeLost(id: String) {
     val map =
       Arguments.createMap().apply {
         putString("id", id)
+        putDouble("lastSeen", System.currentTimeMillis().toDouble())
       }
-    emitOnNodeDisconnected(map)
+    sendEvent("onNodeDisconnected", map)
   }
 
   override fun onDirectMessageReceived(message: BeaconMessage) {
+    val payload = message.payload?.let { String(it, Charsets.UTF_8) } ?: ""
+    val sessionUserId = meshManager.getSDK().currentSession?.userId
+
     val map =
       Arguments.createMap().apply {
         putString("messageId", message.id)
         putString("from", message.senderId)
-        putString("to", meshManager.getSDK().currentSession!!.userId)
-        putString("payload", String(message.payload!!))
-        putDouble("timestamp", message.timestamp)
+        putString("to", sessionUserId)
+        putString("payload", payload)
+        putDouble("timestamp", message.timestamp.toDouble())
       }
-    emitOnP2PMessageReceived(map)
+    sendEvent("onP2PMessageReceived", map)
   }
 
   override fun onPublicMessageReceived(message: BeaconMessage) {
+    val payload = message.payload?.let { String(it, Charsets.UTF_8) } ?: ""
+    val sessionUserId = meshManager.getSDK().currentSession?.userId
+
     val map =
       Arguments.createMap().apply {
         putString("messageId", message.id)
-        // putString("from", message)
-        putString("to", meshManager.getSDK().currentSession!!.userId)
-        putString("payload", String(message.payload!!))
-        putDouble("timestamp", message.timestamp)
+        putString("from", message.senderId)
+        putString("to", sessionUserId)
+        putString("payload", payload)
+        putDouble("timestamp", message.timestamp.toDouble())
       }
-    emitOnBroadcastMessageReceived(map)
+    sendEvent("onBroadcastMessageReceived", map)
   }
 
-  private fun validateStarted() =
-    runCatching {
-      validateNotInitialized().getOrThrow()
-      if (meshManager.isStarted()) throw BeaconMeshException.SessionErrorException("Bridgefy already started.")
-      meshManager.isStarted()
+  private fun ensureInitialized() {
+    if (!meshManager.isInitialized()) {
+      throw BeaconMeshException.SessionErrorException("Bridgefy is not initialized.")
     }
+  }
 
-  private fun validateNotStarted() =
-    runCatching {
-      validateNotInitialized().getOrThrow()
-      if (!meshManager.isStarted()) throw BeaconMeshException.SessionErrorException("Bridgefy is not started.")
-      meshManager.isStarted()
+  private fun ensureNotInitialized() {
+    if (meshManager.isInitialized()) {
+      throw BeaconMeshException.SessionErrorException("Bridgefy is already initialized.")
     }
+  }
 
-  private fun validateNotInitialized() =
-    runCatching {
-      if (!meshManager.isInitialized()) throw BeaconMeshException.SessionErrorException("Bridgefy is not initialized")
-      meshManager.isInitialized()
+  private fun ensureStarted() {
+    if (!meshManager.isStarted()) {
+      throw BeaconMeshException.SessionErrorException("Bridgefy is not started.")
     }
+  }
+
+  private fun ensureNotStarted() {
+    if (meshManager.isStarted()) {
+      throw BeaconMeshException.SessionErrorException("Bridgefy is already started.")
+    }
+  }
 
   private fun handleException(
     code: String,
@@ -300,16 +378,25 @@ class BeaconMeshSDKModule(
     val map =
       Arguments.createMap().apply {
         putString("code", code)
-        putString("message", e.localizedMessage ?: e.message ?: "unknow")
+        putString("message", e.localizedMessage ?: e.message ?: "unknown")
         putString("context", context)
       }
-    promise?.reject(code, e) ?: emitOnBeaconMeshError(map)
-  }
-}
 
-private fun ByteArray.toWritableArray(): ReadableArray =
-  Arguments.createArray().apply {
-    for (b in this@toWritableArray) {
-      pushInt(b.toInt() and 0xFF)
+    if (promise != null) {
+      promise.reject(code, e.message, e)
+    } else {
+      sendEvent("onBeaconMeshError", map)
     }
   }
+
+  private fun sendEvent(
+    eventName: String,
+    params: WritableMap?,
+  ) {
+    if (listenerCount <= 0) return
+
+    reactApplicationContext
+      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      .emit(eventName, params)
+  }
+}

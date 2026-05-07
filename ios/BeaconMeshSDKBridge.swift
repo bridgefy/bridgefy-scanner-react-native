@@ -290,12 +290,12 @@ final class BeaconMeshSDKBridge: NSObject, BeaconMeshClientDelegate {
     _ resolve: RCTPromiseResolveBlock,
     reject: RCTPromiseRejectBlock
   ) {
-    let node: [String: Any] = [
-      "userId": self.meshManager.currentUUID(),
-      "startTime": self.startTime,
-      "isActive" : true
-    ]
-    resolve(node)
+      let node: [String: Any] = [
+          "userId": meshManager.currentUUID() ?? NSNull(),
+          "startTime": startTime ?? NSNull(),
+          "isActive": meshManager.isStarted
+      ]
+      resolve(node)
   }
 
   // MARK: - Delegate Events
@@ -362,9 +362,9 @@ final class BeaconMeshSDKBridge: NSObject, BeaconMeshClientDelegate {
                         didDetectBeacon beacon: Beacon) {
 
     delegate?.emitBeaconDiscovered(
-      withUUID: nil,
+      withUUID: {},
       rssi: Double(beacon.rssi) ?? 0,
-      txPower: nil,
+      txPower: {},
       deviceAddress: beacon.minewMAC,
       name: beacon.name
     )
@@ -374,9 +374,9 @@ final class BeaconMeshSDKBridge: NSObject, BeaconMeshClientDelegate {
                         didLoseBeacon beacon: Beacon) {
 
     delegate?.emitBeaconLost(
-      withUUID: nil,
+      withUUID: {},
       rssi: Double(beacon.rssi) ?? 0,
-      txPower: nil,
+      txPower: {},
       deviceAddress: beacon.minewMAC,
       name: beacon.name
     )

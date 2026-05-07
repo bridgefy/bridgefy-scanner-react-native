@@ -138,11 +138,11 @@ export const addBeaconMeshEvent = (
  * Event listener setup hook
  * Call this once in your main app or a context provider
  */
-export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
+export const setupBeaconMeshEventListeners = (bridgefyEvens: any) => {
   const store = useBeaconMeshEventStore.getState();
 
   // Lifecycle Events
-  BeaconMesh.onBeaconMeshStarted((event: BeaconMeshSession) => {
+  bridgefyEvens.onBeaconMeshStarted((event: BeaconMeshSession) => {
     store.setIsStarted(true);
     store.setCurrentUserId(event.userId);
     addBeaconMeshEvent(
@@ -154,7 +154,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
     );
   });
 
-  BeaconMesh.onBeaconMeshStopped(() => {
+  bridgefyEvens.onBeaconMeshStopped(() => {
     store.setIsStarted(false);
     addBeaconMeshEvent(
       'info',
@@ -164,7 +164,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
     );
   });
 
-  BeaconMesh.onError((error: BeaconMeshError) => {
+  bridgefyEvens.onBeaconMeshError((error: BeaconMeshError) => {
     store.setIsStarted(false);
     addBeaconMeshEvent(
       'error',
@@ -177,7 +177,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
 
   // Beacon Discovered
 
-  BeaconMesh.onBeaconDiscovered((event: Beacon) => {
+  bridgefyEvens.onBeaconDiscovered((event: Beacon) => {
     addBeaconMeshEvent(
       'info',
       'BEACON_MESH_DID_BEACON_DISCOVERED',
@@ -188,7 +188,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
   });
 
   // Connection Events
-  BeaconMesh.onNodeConnected((event: BeaconNode) => {
+  bridgefyEvens.onNodeConnected((event: BeaconNode) => {
     addBeaconMeshEvent(
       'success',
       'BEACON_MESH_DID_CONNECT',
@@ -198,7 +198,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
     );
   });
 
-  BeaconMesh.onNodeDisconnected((event: BeaconNode) => {
+  bridgefyEvens.onNodeDisconnected((event: BeaconNode) => {
     addBeaconMeshEvent(
       'warning',
       'BEACON_MESH_DID_DISCONNECT',
@@ -209,7 +209,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
   });
 
   // Message Events
-  BeaconMesh.onP2PMessageReceived((event: BeaconMessage) => {
+  bridgefyEvens.onP2PMessageReceived((event: BeaconMessage) => {
     store.setTotalMessagesReceived(store.totalMessagesReceived + 1);
     addBeaconMeshEvent(
       'info',
@@ -220,7 +220,7 @@ export const setupBeaconMeshEventListeners = (BeaconMesh: any) => {
     );
   });
 
-  BeaconMesh.onBroadcastMessageReceived((event: BeaconMessage) => {
+  bridgefyEvens.onBroadcastMessageReceived((event: BeaconMessage) => {
     store.setTotalMessagesReceived(store.totalMessagesReceived + 1);
     addBeaconMeshEvent(
       'info',

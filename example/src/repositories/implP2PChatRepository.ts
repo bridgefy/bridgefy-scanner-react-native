@@ -34,7 +34,7 @@ export class P2PChatRepository implements IP2PChatRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BridgefyScanner.onP2PMessageReceived((event) => {
+      BridgefyScanner.Events.onP2PMessageReceived((event) => {
         const message: P2PMessage = {
           id: event.messageId || `msg-${Date.now()}-${Math.random()}`,
           text: event.payload,
@@ -50,7 +50,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar desconexiones del peer
     this.eventListeners.push(
-      BridgefyScanner.onNodeDisconnected((event) => {
+      BridgefyScanner.Events.onNodeDisconnected((event) => {
         if (event.id === peerId) {
           console.log('Peer disconnected:', peerId);
           this.eventHandlers.onPeerDisconnected?.(peerId);
@@ -60,7 +60,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar reconexiones del peer
     this.eventListeners.push(
-      BridgefyScanner.onNodeConnected((event) => {
+      BridgefyScanner.Events.onNodeConnected((event) => {
         if (event.id === peerId) {
           console.log('Peer connected:', peerId);
           this.eventHandlers.onPeerConnected?.(peerId);
@@ -70,7 +70,7 @@ export class P2PChatRepository implements IP2PChatRepository {
 
     // Escuchar fallos en el envío
     this.eventListeners.push(
-      BridgefyScanner.onError((error) => {
+      BridgefyScanner.Events.onBeaconMeshError((error) => {
         console.error('Failed to send message:', error);
         const err: Error & { messageId?: string } = Object.assign(
           new Error(error?.message ?? 'Failed to send message'),

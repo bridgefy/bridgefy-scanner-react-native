@@ -44,8 +44,7 @@ android.iml
 # Cocoapods
 #
 example/ios/Pods
-example/ios/Podfile.lock
-example/ios/*.xcworkspace
+
 # Ruby
 example/vendor/
 
@@ -85,3 +84,4 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+yarn.lock

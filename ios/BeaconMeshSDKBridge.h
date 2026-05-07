@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import <React/RCTBridgeModule.h>
+#import <React/RCTBridgeModule.h>   // RCTPromiseResolveBlock / RCTPromiseRejectBlock
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  All timestamps are expressed in milliseconds since Unix epoch.
  */
+
 @protocol BeaconMeshSDKBridgeDelegate <NSObject>
 
 /// Called when the mesh network has successfully started.

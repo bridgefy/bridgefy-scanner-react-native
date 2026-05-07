@@ -11,22 +11,10 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/bridgefy/bridgefy-scanner-react-native.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github/bridgefy-bridgefy-scanner-react-native.git", :tag => "#{s.version}" }
 
-  # Include ALL native sources
-  s.source_files = "ios/**/*.{h,m,mm,swift}"
-
-  # TurboModule needs ObjC++
-  s.requires_arc = true
-
-  # Swift support
-  s.swift_version = "5.0"
-
-  # Important for Swift + static libs
-  s.pod_target_xcconfig = {
-    "DEFINES_MODULE" => "YES",
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++17"
-  }
+  s.source_files = "ios/**/*.{h,m,mm,swift,cpp}"
+  s.private_header_files = "ios/**/*.h"
 
   install_modules_dependencies(s)
 end

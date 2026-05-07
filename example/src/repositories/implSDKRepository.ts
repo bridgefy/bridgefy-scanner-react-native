@@ -138,33 +138,33 @@ export class SDKRepository implements ISDKRepository {
     this.eventHandlers = handlers;
 
     this.eventListeners.push(
-      BridgefyScanner.onBeaconMeshStarted((event) => {
+      BridgefyScanner.Events.onBeaconMeshStarted((event) => {
         this.eventHandlers.onStart?.(event.userId);
       })
     );
 
     this.eventListeners.push(
-      BridgefyScanner.onBeaconMeshStopped(() => {
+      BridgefyScanner.Events.onBeaconMeshStopped(() => {
         this.eventHandlers.onStop?.();
       })
     );
 
     this.eventListeners.push(
-      BridgefyScanner.onNodeConnected((event) => {
+      BridgefyScanner.Events.onNodeConnected((event) => {
         this.eventHandlers.onPeerConnect?.(event.id);
         this.updatePeers();
       })
     );
 
     this.eventListeners.push(
-      BridgefyScanner.onNodeDisconnected((event) => {
+      BridgefyScanner.Events.onNodeDisconnected((event) => {
         this.eventHandlers.onPeerDisconnect?.(event.id);
         this.updatePeers();
       })
     );
 
     this.eventListeners.push(
-      BridgefyScanner.onError((error: BeaconMeshError) => {
+      BridgefyScanner.Events.onBeaconMeshError((error: BeaconMeshError) => {
         const err = new Error(
           (error as any)?.message ?? 'Beacon Mesh failed to start'
         );
