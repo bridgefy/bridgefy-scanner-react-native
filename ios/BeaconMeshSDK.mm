@@ -5,6 +5,7 @@
 #import <ReactCommon/RCTTurboModule.h>
 
 #import "BeaconMeshSDKBridge.h"
+#import "BeaconMeshSDKBridgeDelegate.h"
 
 using namespace facebook;
 

@@ -362,9 +362,9 @@ final class BeaconMeshSDKBridge: NSObject, BeaconMeshClientDelegate {
                         didDetectBeacon beacon: Beacon) {
 
     delegate?.emitBeaconDiscovered(
-      withUUID: {},
+      withUUID: nil,
       rssi: Double(beacon.rssi) ?? 0,
-      txPower: {},
+      txPower: nil,
       deviceAddress: beacon.minewMAC,
       name: beacon.name
     )
@@ -374,9 +374,9 @@ final class BeaconMeshSDKBridge: NSObject, BeaconMeshClientDelegate {
                         didLoseBeacon beacon: Beacon) {
 
     delegate?.emitBeaconLost(
-      withUUID: {},
+      withUUID: nil,
       rssi: Double(beacon.rssi) ?? 0,
-      txPower: {},
+      txPower: nil,
       deviceAddress: beacon.minewMAC,
       name: beacon.name
     )

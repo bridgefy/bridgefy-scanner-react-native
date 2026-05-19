@@ -1,5 +1,5 @@
 {
-  "name": "bridgefy-monitor",
+  "name": "@bridgefy/scanner-react-native-example",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "build:web": "expo export --platform web"
   },
   "dependencies": {
+    "@bridgefy/scanner-react-native": "workspace:*",
     "@expo/metro-runtime": "~3.2.3",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.18",
