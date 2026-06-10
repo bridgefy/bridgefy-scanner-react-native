@@ -57,15 +57,23 @@ class BeaconMeshSDKModule(
   ) {
     try {
       validateStarted().getOrThrow()
-      val session = meshManager.getSDK().start(userId?.let { UUID.fromString(it) }).getOrThrow()
-      val map =
-        Arguments.createMap().apply {
-          putString("userId", session.userId)
-          putLong("startTime", session.startTime)
-          putBoolean("isActive", session.isActive)
+      meshManager
+        .getSDK()
+        .start((userId?.let { UUID.fromString(it) })) { response ->
+          response
+            .onSuccess { session ->
+              val map =
+                Arguments.createMap().apply {
+                  putString("userId", session.userId)
+                  putLong("startTime", session.startTime)
+                  putBoolean("isActive", session.isActive)
+                }
+              emitOnBeaconMeshStarted(map.copy())
+              promise.resolve(map)
+            }.onFailure { e ->
+              handleException("ERROR_STARTED", e as Exception, "start", promise)
+            }
         }
-      emitOnBeaconMeshStarted(map.copy())
-      promise.resolve(map)
     } catch (e: Exception) {
       handleException("ERROR_STARTED", e, "start", promise)
     }
@@ -77,11 +85,17 @@ class BeaconMeshSDKModule(
   ) {
     try {
       validateNotStarted()
-      meshManager.getSDK().stop {
-        it.getOrThrow()
-        emitOnBeaconMeshStopped()
-        promise.resolve(null)
-      }
+      meshManager
+        .getSDK()
+        .stop {
+          it
+            .onSuccess {
+              emitOnBeaconMeshStopped()
+              promise.resolve(null)
+            }.onFailure { e ->
+              handleException("STOP_FAILED", e as Exception, "stop", promise)
+            }
+        }
     } catch (e: Exception) {
       handleException("STOP_FAILED", e, "stop", promise)
     }
