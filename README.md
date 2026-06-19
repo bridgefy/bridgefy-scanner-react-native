@@ -1,4 +1,4 @@
-# BridgefyScanner 1.0.2
+# BridgefyScanner 1.0.3
 
 The package is a JavaScript wrapper around the native `BeaconMeshSDK` TurboModule and exposes initialization, session control, messaging, connectivity helpers, and event listeners.
 
