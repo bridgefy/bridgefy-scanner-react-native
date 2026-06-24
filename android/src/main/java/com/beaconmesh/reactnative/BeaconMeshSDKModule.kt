@@ -198,7 +198,7 @@ class BeaconMeshSDKModule(
     try {
       promise.resolve(meshManager.isStarted())
     } catch (e: Exception) {
-      handleException("NOT_INITIALIZED", e, "sendBroadcast", promise)
+      handleException("NOT_INITIALIZED", e, "isStarted", promise)
     }
   }
 
@@ -277,7 +277,7 @@ class BeaconMeshSDKModule(
     val map =
       Arguments.createMap().apply {
         putString("messageId", message.id)
-        // putString("from", message)
+        putString("from", message.senderId)
         putString("to", meshManager.getSDK().currentSession!!.userId)
         putString("payload", String(message.payload!!))
         putDouble("timestamp", message.timestamp)
@@ -320,10 +320,3 @@ class BeaconMeshSDKModule(
     promise?.reject(code, e) ?: emitOnBeaconMeshError(map)
   }
 }
-
-private fun ByteArray.toWritableArray(): ReadableArray =
-  Arguments.createArray().apply {
-    for (b in this@toWritableArray) {
-      pushInt(b.toInt() and 0xFF)
-    }
-  }
