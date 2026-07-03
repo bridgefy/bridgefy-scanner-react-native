@@ -489,7 +489,7 @@
 			repositoryURL = "https://github.com/bridgefy/BeaconMeshSDK-iOS";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.5;
+				minimumVersion = 1.0.8;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
